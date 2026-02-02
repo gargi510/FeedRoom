@@ -1,0 +1,13 @@
+# Ignore Python environment and cache
+__pycache__/
+venv/
+.env
+
+# Ignore large AI models and audio samples
+voice_samples/
+models/
+*.wav
+*.mp3
+
+# Ignore Streamlit state
+.streamlit/

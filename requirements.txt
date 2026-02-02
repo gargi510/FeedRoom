@@ -1,0 +1,41 @@
+# Pivot Note - Production Dependencies
+# Python 3.10+
+
+# Core Framework
+streamlit==1.31.0
+
+# AI/ML
+google-generativeai==0.3.2
+
+# APIs
+serpapi==0.1.5
+python-dotenv==1.0.0
+
+# Database
+supabase==2.3.4
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.3
+
+# Visualization
+plotly==5.18.0
+matplotlib==3.8.2
+seaborn==0.13.1
+wordcloud==1.9.3
+
+# Audio (for voice generation)
+gTTS==2.5.0
+# TTS==0.22.0  # Uncomment if using advanced voice cloning
+
+# File handling
+openpyxl==3.1.2
+python-docx==1.1.0
+pypdf2==3.0.1
+
+# Utilities
+Pillow==10.2.0
+requests==2.31.0
+
+# Audio recording (optional)
+# audio-recorder-streamlit==0.0.8  # Uncomment if needed
