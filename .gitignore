@@ -5,6 +5,7 @@ venv/
 
 # Ignore large AI models and audio samples
 voice_samples/
+assets/
 models/
 *.wav
 *.mp3
