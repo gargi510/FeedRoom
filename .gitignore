@@ -5,18 +5,9 @@ venv/
 
 # Ignore large AI models and audio samples
 voice_samples/
-voice cloning/
-fonts/
-backups/
-assets/
-audio/
 models/
 *.wav
 *.mp3
 
 # Ignore Streamlit state
 .streamlit/
-
-#git add .
-#git commit -m "Updated script for tonight's launch"
-#git push
