@@ -248,7 +248,9 @@ def push_to_supabase(supabase, google_trends, twitter_trends):
                 'trend_type': trend.get('trend_type', 'search'),
                 'context': trend.get('context', ''),
                 'why_trending': trend.get('why_trending', ''),
-                'related_searches': trend.get('related_searches', [])
+                'related_searches': trend.get('related_searches', []),
+                'public_sentiment': trend.get('public_sentiment', 'curious'),
+                'sentiment_score': trend.get('sentiment_score', 50)
             }
             google_records.append(record)
         

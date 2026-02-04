@@ -43,7 +43,7 @@ YOUR MISSION: Enrich each trend with context, categorization, and sentiment anal
 
 def get_twitter_prompt():
     """Prompt for Grok to collect Twitter trends"""
-    return """You are a Senior Twitter/X Trend Analyst for Pivot Note. Your task is to provide a comprehensive analysis of the top 10 trends for the USA and India respectively, covering the FULL LAST 24 HOURS.
+    return """You are a Senior Twitter/X Trend Analyst for The FeedRoom. Your task is to provide a comprehensive analysis of the top 10 trends for the USA and India respectively, covering the FULL LAST 24 HOURS.
 
 === CRITICAL TIMEFRAME RULE ===
 Analyze activity from the absolute last 24 hours. Do not just report what is spiking "now." For India, specifically look back at the evening prime-time hours (IST) that occurred while the US was asleep to ensure a full day's cycle is captured.
@@ -91,16 +91,14 @@ def get_analysis_prompt(data_summary):
     
     identity_section = """
 <identity>
-You are the Lead Intelligence Analyst for Pivot Note. 
-Your mission is to synthesize raw data into high-fidelity strategic insights for daily trend reports.
+You are the Lead Intelligence Analyst for The FeedRoom. Your mission is to synthesize raw data into high-fidelity strategic insights for daily trend reports.
 </identity>
 
 <mission>
 1. ANALYZE: Review global data to find regional contrasts and cultural ripples.
-2. CLUSTER: Group data into EXACTLY 2 major themes per region (PRIMARY + SECONDARY).
+2. CLUSTER: Group data into EXACTLY 2 major themes per region.
 3. DETECT: Identify EXACTLY 2 distinct anomalies per region (low volume, breakout velocity).
-4. SYNTHESIZE: For every theme, follow the 'Chain of Logic': 
-   Data Signal -> Factual Context -> Deep Why (Psychological/Systemic Reason) -> The Big Question.
+4. SYNTHESIZE: For every theme, follow the 'Chain of Logic': Data Signal -> Factual Context -> Deep Why -> The Big Question.
 </mission>
 """
 
@@ -123,8 +121,20 @@ Your mission is to synthesize raw data into high-fidelity strategic insights for
 <required_json_format>
 ```json
 {
-  "executive_summary": "2-3 sentences: Compare the Global (USA) vs. Local (India) pulse for today.",
-  
+  "executive_summary": "2-3 sentences: Give 1 line sumamry of India feeds and searches and 1 like for USA and in 1 line Compare the Global (USA) vs. Local (India) pulse for last 24 hours.",
+   
+   "entities": [
+    {
+      "type": "PERSON/ORGANIZATION/EVENT/PRODUCT/LOCATION/TOPIC",
+      "name": "Exact entity name",
+      "keywords": ["keyword1", "keyword2"],
+      "mentions": 50000,  // Approximate total across all data
+      "regions": ["India", "USA"],  // Where they're trending
+      "context": "1-sentence: Why is this entity central to today's trends?",
+      "sentiment": "excited/concerned/curious/celebrating/controversial",
+      "role": "protagonist/catalyst/victim/winner/disruptor/etc"
+    }
+  ],
   "india_intelligence": {
     "weather_grid": [
       {
@@ -239,198 +249,218 @@ Your mission is to synthesize raw data into high-fidelity strategic insights for
 
 def get_assembly_prompt_india(intelligence_grid, production_mood):
     """
-    India Assembly - 2 Segments + 1 Outlier Script Generation
-    NO MOVIEPY - Only Script & Metadata
+    Generate India script assembly with analytical authority
     """
-    
-    # Extract Grid Data
-    weather_grid = intelligence_grid.get('weather_grid', [])
-    anomalies = intelligence_grid.get('anomalies', [])
     sentiment = production_mood.get('overall_sentiment', 0)
     
-    # Dynamic Tone/Sentiment Logic
     if sentiment < -0.6:
-        tone_directive = "TONE: Somber, clinical, and impact-focused. ABSOLUTELY NO SATIRE. Focus on systemic shock and 'The Why'."
+        tone_directive = "Serious, authoritative. This requires attention."
         emotion_tag = "[EMOTION: GRAVITY/URGENCY]"
     elif sentiment > 0.4:
-        tone_directive = "TONE: High-energy, optimistic, and fast-paced. Focus on growth and breakouts."
-        emotion_tag = "[EMOTION: EXCITEMENT/VIBRANCE]"
+        tone_directive = "Confident, dynamic. This is significant."
+        emotion_tag = "[EMOTION: CONFIDENCE/CLARITY]"
     else:
-        tone_directive = "TONE: Sharp, satirical, and analytical. Contrast 'The Usual' (mainstream) vs 'The Shocking' (current data)."
-        emotion_tag = "[EMOTION: SKEPTICAL/WITTY]"
-
+        tone_directive = "Analytical, questioning. This warrants examination."
+        emotion_tag = "[EMOTION: ANALYTICAL/MEASURED]"
+    
+    themes = intelligence_grid.get('weather_grid', [])
+    outliers = intelligence_grid.get('outliers', [])
+    
+    themes_summary = "\n".join([
+        f"Pattern {i+1}: {t.get('theme', 'N/A')} - {t.get('big_question', 'N/A')}"
+        for i, t in enumerate(themes[:2])
+    ])
+    
+    outliers_summary = "\n".join([
+        f"Anomaly {i+1}: {o.get('keyword', 'N/A')} - {o.get('explanation', 'N/A')}"
+        for i, o in enumerate(outliers[:1])
+    ])
+    
     return f"""
 <identity>
-Script Director for 'Internet Feed' (Pivot Note India Edition). 
-Mission: Transform intelligence grid into a 60-second audio script.
-{tone_directive}
+You are an Authoritative Analyst decoding internet patterns. Your voice is calm, logical, confident, and data-driven. You make sense of feeds and highlight patterns, anomalies, and opportunities.
 </identity>
 
-<input_intelligence>
-GRID: {json.dumps(intelligence_grid, indent=2)}
-MOOD: {json.dumps(production_mood, indent=2)}
-EMOTION_OVERLAY: {emotion_tag}
-</input_intelligence>
+<tone_directive>
+{tone_directive}
+{emotion_tag}
+Use Sophisticated Modern Indian English throughout.
+</tone_directive>
 
 <script_logic_constraints>
-1. METRIC-FIRST START: Every segment MUST start with the [Actual Keyword] and its [Metric].
-2. SOURCE BRANDING (Layman Terms): If keyword contains '#': use "Viral mentions are exploding". If plain text: use "Search interest just spiked".
-3. MULTI-DATA BLENDING: If theme has multiple keywords, mention both.
-4. LAYMAN WHY: Explain why it is trending in 1 simple, jargon-free sentence.
-5. WORD LIMITS: Intro: Max 10 words (4s). Segment 1: 32-35 words (15s). Segment 2: 32-35 words (15s). Outlier: 25-28 words (13s). Outro: Max 10 words (6s).
-6. NO POETIC TITLES: Use raw keywords directly.
-7. CONTRAST PATTERN: "[Keyword]. [Metric]. Usually [normal], but today [shocking twist]."
-8. TOTAL DURATION: 60 seconds = ~150 words total
+- FIXED INTRO: "The last 24 decoded in 60. Here's what's trending?"
+- FIXED OUTRO: "What's on your feed today? Comment below!"
+- STRUCTURE:
+  * Segment 1: Major Pattern (30-50 words)
+  * Segment 2: Major Pattern (35-50 words)
+  * Outlier: Anomaly (35-50 words)
+- Each segment MUST end with exactly ONE sharp, thought-provoking rhetorical question
+- Total script: fits within 60 seconds
+- Sentances should be short and not verbose. 
+-Start with a relevant segment name 1-3 words followed by analytical catchy metric. 
+-In case metion 'people are searching or keyword is trending' based on source platform
+- Voice: authoritative, analytical, data-driven
+- Language: Layman Sophisticated Modern Indian English (NO slang, NO Hinglish, NO memes)
 </script_logic_constraints>
 
 <production_directive>
-- TOTAL DURATION: 60.0 Seconds
-- FORMAT: Intro (4s) -> Segment 1 (15s) -> Segment 2 (15s) -> Outlier (13s) -> Bridge (7s) -> Outro (6s)
-- SEGMENTS: 2 main themes + 1 outlier (NOT 3 themes)
-- STYLE: Conversational, data-first, provocative endings
+Visual Style: {production_mood.get('visual_background_prompt', 'dynamic')}
+Color Palette: {production_mood.get('vibe_color_hex', '#ff9933')}
+Vocal Energy: {production_mood.get('vocal_tone', 'authoritative')}
 </production_directive>
 
-<required_json_output>
+<intelligence_summary>
+{themes_summary}
+
+{outliers_summary}
+</intelligence_summary>
+
+<critical_rules>
+- NEVER invent data
+- Use ONLY keywords from intelligence grid
+- Keep intro/outro EXACTLY as specified
+- Write in authoritative, analytical voice
+- Write short, layman, humanlike sentences
+- Each segment ends with ONE rhetorical question only
+- Maintain clarity, brevity, and logical flow
+- Focus on data-driven insights that are immediately actionable
+</critical_rules>
+
+Return JSON:
 ```json
 {{
-  "youtube_metadata": {{
-    "title": "Internet Feed: [Big Question from Segment 1]?",
-    "description": "Daily India Intelligence Report.\\n\\n[Data-First 1-line summary per segment].\\n\\nSources: Aggregated from Google Trends + Twitter API",
-    "hashtags": ["#PivotNote", "#InternetFeed", "#IndiaTrends"],
-    "pinned_comment": "Just for today, or here to stay? Comment below." 
-  }},
-  
   "script_assembly": {{
-    "intro": "Internet Feed. Sixty seconds. The data is in.",
-    "segment_1": "[PRIMARY Keyword]. [Metric] [Source Branding]. [Layman Why]. [Friction/Impact]. [Big Question]?",
-    "segment_2": "[SECONDARY Keyword]. [Metric] [Source Branding]. [Layman Why]. [Friction/Impact]. [Bridge to Outlier]. [Big Question]?",
-    "outlier": "Breakout: [Anomaly Keyword]. [Metric]. [Layman Why]. [Final Edge]. Just for today, or here to stay?",
-    "outro": "Just for today, or here to stay? Comment below." 
+    "intro": "The last 24 decoded in 60 ! Here's what's trending?",
+    "segment_1": "30-50 word analytical segment about major pattern 1, ending with one rhetorical question",
+    "segment_2": "30-50 word analytical segment about major pattern 2, ending with one rhetorical question",
+    "outlier": "30-50 word analytical segment about anomaly, ending with one rhetorical question",
+    "outro": "What's on your feed today? Comment below!"
   }},
-  
+  "youtube_metadata": {{
+    "title": "60-char analytical title",
+    "description": "150-word description",
+    "hook": "First 10 seconds script",
+    "hashtags": ["#tag1", "#tag2", "#tag3"]
+  }},
   "visual_prompts": {{
-    "thumbnail": "Cinematic data dashboard featuring [Keyword 1] in India --ar 16:9",
-    "intro_background": "Data streams morphing with India aesthetics --ar 9:16",
-    "segment_1_visual": "Visual concept for primary theme --ar 9:16",
-    "segment_2_visual": "Visual concept for secondary theme --ar 9:16",
-    "outlier_visual": "Breakout signal visualization --ar 9:16"
+    "intro_visual": "AI image prompt",
+    "segment_1_visual": "AI image prompt",
+    "segment_2_visual": "AI image prompt",
+    "outlier_visual": "AI image prompt",
+    "outro_visual": "AI image prompt"
   }}
 }}
 ```
-</required_json_output>
-
-<critical_rules>
-1. ALWAYS start segments with keyword and metric
-2. Use SOURCE BRANDING to distinguish search vs viral
-3. Respect WORD LIMITS strictly (count them!)
-4. Tone adapts to sentiment: Crisis = Somber, Positive = Energetic, Neutral = Satirical
-5. Total word count: ~150 words for 60 seconds
-6. Return ONLY valid JSON
-7. IMPORTANT: Only 2 segments + 1 outlier (not 3 segments + anomaly)
-</critical_rules>
 """
+
 
 def get_assembly_prompt_usa(intelligence_grid, production_mood):
     """
-    USA Assembly - 2 Segments + 1 Outlier Script Generation
-    NO MOVIEPY - Only Script & Metadata
+    Generate USA script assembly with analytical authority
     """
-    
-    # Extract Grid Data
-    weather_grid = intelligence_grid.get('weather_grid', [])
-    anomalies = intelligence_grid.get('anomalies', [])
     sentiment = production_mood.get('overall_sentiment', 0)
     
-    # Dynamic Tone/Sentiment Logic (USA version)
     if sentiment < -0.6:
-        tone_directive = "TONE: Urgent, data-driven, and solutions-focused. NO FLUFF. Focus on 'What This Means' and 'What's Next'."
-        emotion_tag = "[EMOTION: URGENCY/SERIOUSNESS]"
+        tone_directive = "Serious, authoritative. This requires attention."
+        emotion_tag = "[EMOTION: GRAVITY/URGENCY]"
     elif sentiment > 0.4:
-        tone_directive = "TONE: Upbeat, forward-looking, and momentum-driven. Focus on innovation and progress."
-        emotion_tag = "[EMOTION: OPTIMISM/MOMENTUM]"
+        tone_directive = "Confident, dynamic. This is significant."
+        emotion_tag = "[EMOTION: CONFIDENCE/CLARITY]"
     else:
-        tone_directive = "TONE: Analytical, skeptical, and data-first. Contrast 'Expected Pattern' vs 'Actual Data'."
-        emotion_tag = "[EMOTION: ANALYTICAL/QUESTIONING]"
-
+        tone_directive = "Analytical, questioning. This warrants examination."
+        emotion_tag = "[EMOTION: ANALYTICAL/MEASURED]"
+    
+    themes = intelligence_grid.get('weather_grid', [])
+    outliers = intelligence_grid.get('outliers', [])
+    
+    themes_summary = "\n".join([
+        f"Pattern {i+1}: {t.get('theme', 'N/A')} - {t.get('big_question', 'N/A')}"
+        for i, t in enumerate(themes[:2])
+    ])
+    
+    outliers_summary = "\n".join([
+        f"Anomaly {i+1}: {o.get('keyword', 'N/A')} - {o.get('explanation', 'N/A')}"
+        for i, o in enumerate(outliers[:1])
+    ])
+    
     return f"""
 <identity>
-Script Director for 'Internet Feed' (Pivot Note USA Edition). 
-Mission: Transform intelligence grid into a 60-second audio script.
-{tone_directive}
+You are an Authoritative Analyst decoding internet patterns. Your voice is calm, logical, confident, and data-driven. You make sense of feeds and highlight patterns, anomalies, and opportunities.
 </identity>
 
-<input_intelligence>
-GRID: {json.dumps(intelligence_grid, indent=2)}
-MOOD: {json.dumps(production_mood, indent=2)}
-EMOTION_OVERLAY: {emotion_tag}
-</input_intelligence>
+<tone_directive>
+{tone_directive}
+{emotion_tag}
+Use Sophisticated Modern American English throughout.
+</tone_directive>
 
 <script_logic_constraints>
-1. METRIC-FIRST START: Every segment MUST start with the [Actual Keyword] and its [Metric]. 
-2. SOURCE BRANDING (Layman Terms): 
-   - If keyword contains '#': use "Viral mentions spiking" or "Trending on social".
-   - If keyword is plain text: use "Search volume jumped" or "America is searching [Keyword]".
-3. MULTI-DATA BLENDING: If a theme has multiple keywords, mention both.
-4. LAYMAN WHY: Explain why it is trending in 1 simple, jargon-free sentence.
-5. WORD LIMITS: Intro: Max 10 words (4s). Segment 1: 32-35 words (15s). Segment 2: 32-35 words (15s). Outlier: 25-28 words (13s). Outro: Max 10 words (6s).
-6. NO POETIC TITLES: Use raw keywords directly.
-7. CONTRAST PATTERN: "[Keyword]. [Metric]. Expected [baseline], seeing [actual]. [Why it matters]."
-8. TOTAL DURATION: 60 seconds = ~150 words total
+- FIXED INTRO: "The last 24 decoded in 60. Here's what's trending?"
+- FIXED OUTRO: "What's on your feed today? Comment below!"
+- STRUCTURE:
+  * Segment 1: Major Pattern (65-75 words)
+  * Segment 2: Major Pattern (65-75 words)
+  * Outlier: Anomaly (65-75 words)
+- Each segment MUST end with exactly ONE sharp, thought-provoking rhetorical question
+- Total script: fits within 60 seconds
+- Voice: authoritative, analytical, data-driven
+- Language: Sophisticated Modern American English (NO slang, NO casual language, NO memes)
 </script_logic_constraints>
 
 <production_directive>
-- TOTAL DURATION: 60.0 Seconds
-- FORMAT: Intro (4s) -> Segment 1 (15s) -> Segment 2 (15s) -> Outlier (13s) -> Bridge (7s) -> Outro (6s)
-- SEGMENTS: 2 main themes + 1 outlier (NOT 3 themes)
-- STYLE: Conversational, data-first, provocative endings
+Visual Style: {production_mood.get('visual_background_prompt', 'dynamic')}
+Color Palette: {production_mood.get('vibe_color_hex', '#4285f4')}
+Vocal Energy: {production_mood.get('vocal_tone', 'authoritative')}
 </production_directive>
 
-<required_json_output>
+<intelligence_summary>
+{themes_summary}
+
+{outliers_summary}
+</intelligence_summary>
+
+<critical_rules>
+- NEVER invent data
+- Use ONLY keywords from intelligence grid
+- Keep intro/outro EXACTLY as specified
+- Write in authoritative, analytical voice
+- Each segment ends with ONE rhetorical question only
+- Maintain clarity, brevity, and logical flow
+- Focus on data-driven insights that are immediately actionable
+</critical_rules>
+
+Return JSON:
 ```json
 {{
-  "youtube_metadata": {{
-    "title": "Internet Feed: [Big Question from Segment 1]?",
-    "description": "Daily USA Intelligence Report.\\n\\n[Data-First 1-line summary per segment].\\n\\nSources: Aggregated from Google Trends + Twitter API",
-    "hashtags": ["#PivotNote", "#InternetFeed", "#USATrends"],
-    "pinned_comment": "Which signal are you tracking? Comment below."
-  }},
-  
   "script_assembly": {{
-    "intro": "What's up America. Here's your data grid for today.",
-    "segment_1": "[PRIMARY Keyword]. [Metric] [Source Branding]. [Layman Why]. [Impact/Implications]. [Big Question]?",
-    "segment_2": "[SECONDARY Keyword]. [Metric] [Source Branding]. [Layman Why]. [Impact/Implications]. [Bridge to Outlier]. [Big Question]?",
-    "outlier": "Breakout signal: [Anomaly Keyword]. [Metric]. [Layman Why]. [Final Insight]. Which way does this go?",
-    "outro": "Grid is clear. Which signal are you tracking? Comment below."
+    "intro": "The last 24 decoded in 60. Here's what's trending?",
+    "segment_1": "65-75 word analytical segment about major pattern 1, ending with one rhetorical question",
+    "segment_2": "65-75 word analytical segment about major pattern 2, ending with one rhetorical question",
+    "outlier": "65-75 word analytical segment about anomaly, ending with one rhetorical question",
+    "outro": "What's on your feed today? Comment below!"
   }},
-  
+  "youtube_metadata": {{
+    "title": "60-char analytical title",
+    "description": "150-word description",
+    "hook": "First 10 seconds script",
+    "hashtags": ["#tag1", "#tag2", "#tag3"]
+  }},
   "visual_prompts": {{
-    "thumbnail": "Cinematic data dashboard featuring [Keyword 1] in USA --ar 16:9",
-    "intro_background": "Digital data streams with American tech aesthetic --ar 9:16",
-    "segment_1_visual": "Visual concept for primary theme --ar 9:16",
-    "segment_2_visual": "Visual concept for secondary theme --ar 9:16",
-    "outlier_visual": "Breakout signal visualization --ar 9:16"
+    "intro_visual": "AI image prompt",
+    "segment_1_visual": "AI image prompt",
+    "segment_2_visual": "AI image prompt",
+    "outlier_visual": "AI image prompt",
+    "outro_visual": "AI image prompt"
   }}
 }}
 ```
-</required_json_output>
-
-<critical_rules>
-1. ALWAYS start segments with keyword and metric
-2. Use SOURCE BRANDING to distinguish search vs viral
-3. Respect WORD LIMITS strictly (count them!)
-4. Tone adapts to sentiment: Crisis = Urgent, Positive = Optimistic, Neutral = Analytical
-5. Total word count: ~150 words for 60 seconds
-6. Return ONLY valid JSON
-7. IMPORTANT: Only 2 segments + 1 outlier (not 3 segments + anomaly)
-</critical_rules>
 """
-
 
 def get_deepdive_research_prompt(keyword, region, context, why_trending, volume, velocity, sentiment):
     """Deep Dive Research - Strategic Clash Focus (NO TIMELINE)"""
     
     return f"""
-You are a Competitive Intelligence Lead analyzing #{keyword} for Pivot Note Deep Dive.
+You are a Competitive Intelligence Lead analyzing #{keyword} for FeedRoom Deep Dive.
 
 === RESEARCH GOAL: THE STRATEGIC CLASH ===
 Ignore history and timelines. Focus entirely on the IDEOLOGICAL BATTLE happening NOW.
@@ -482,12 +512,12 @@ Return ONLY valid JSON within markdown block.
 
 def get_deepdive_script_prompt(research_data, keyword, region):
     """
-    Deep Dive Production Script - FIXED for 2-minute crisp delivery
-    NO MOVIEPY - Only audio script and metadata
+    Deep Dive Production Script - FIXED to match actual assembly structure
+    Returns: audio_script, youtube_metadata, visual_prompts (NOT assembly_logic)
     """
     
     return f"""
-You are the Script Director for Pivot Note Deep Dive. Convert this strategic clash into a CRISP 120-SECOND audio script.
+You are the Script Director for FeedRoom Deep Dive. Convert this strategic clash into a CRISP 120-SECOND audio script.
 
 === INPUT RESEARCH DATA ===
 {json.dumps(research_data, indent=2)}
@@ -550,20 +580,20 @@ You are the Script Director for Pivot Note Deep Dive. Convert this strategic cla
    - Max 15 words per sentence
    - Short punchy sentences create energy
 
-=== REQUIRED JSON OUTPUT ===
+=== REQUIRED JSON OUTPUT (FIXED STRUCTURE) ===
 ```json
 {{
+  "audio_script": "[YOUR COMPLETE 120-130 WORD SCRIPT HERE - NO SECTION BREAKS, JUST FLOWING TEXT]",
+  
   "youtube_metadata": {{
     "title": "[Provocative Question with Metric]: {keyword}",
     "description": "Deep Dive Analysis of {keyword}.\\n\\nKey Conflict: [One-line clash summary]\\n\\nLead Metric: [The big number]\\n\\nSources:\\n[List top 3 sources from research]",
     "hashtags": ["#PivotNote", "#{keyword.replace(' ', '')}", "#DeepDive"],
-    "pinned_comment": "Which side wins? A or B? Comment below."
+    "hook": "First 15-20 words of audio_script",
+    "thumbnail_prompt": "Cinematic data dashboard featuring {keyword} --ar 16:9"
   }},
   
-  "audio_script": "[YOUR COMPLETE 120-130 WORD SCRIPT HERE - NO SECTION BREAKS, JUST FLOWING TEXT]",
-  
   "visual_prompts": {{
-    "thumbnail": "Cinematic data dashboard featuring {keyword} --ar 16:9",
     "hook_visual": "[Cinematic shot type] + [Subject based on lead metric] + [Lighting mood] --ar 9:16",
     "side_a_visual": "[Cinematic visual representing new logic/innovation] --ar 9:16",
     "side_b_visual": "[Cinematic visual representing traditional concern/risk] --ar 9:16",
@@ -603,9 +633,9 @@ Here's what a CORRECT 127-word script looks like:
 === YOUR TASK ===
 
 Generate the JSON output with:
-1. A CRISP 120-130 word audio_script
-2. Cinematic visual_prompts for each segment
-3. Proper YouTube metadata with keyword {keyword}
+1. A CRISP 120-130 word audio_script (single flowing text, no section breaks)
+2. Proper youtube_metadata with title, description, hashtags, hook, thumbnail_prompt
+3. Cinematic visual_prompts for each segment
 
 **REMEMBER: Quality over quantity. Every word must earn its place.**
 

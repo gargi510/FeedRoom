@@ -536,7 +536,6 @@ def display_twitter_summary(trends, region):
 def render_collection_tab(serpapi_key, gemini_model, supabase):
     """Main render"""
     st.header("📥 Data Collection")
-    st.markdown("**Sophia's Logic Grid + Sonia's Pattern Hunt**")
     
     st.info("🎯 Fetch Google Trends (auto-enriches or manual fallback) + Paste Twitter data!")
     

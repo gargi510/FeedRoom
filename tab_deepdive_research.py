@@ -1,20 +1,19 @@
 """
-Tab 4: Deep Dive Research (The FeedRoom)
-Strategic Clash Research + Script Generation + Audio (NO MoviePy)
+Tab 4: Deep Dive Research - PRODUCTION VERSION
+Strategic Clash Research + Script Generation + Database Save
 """
 import streamlit as st
 import pandas as pd
-import os
 from datetime import date
 from prompts import get_deepdive_research_prompt, get_deepdive_script_prompt
 from utils import parse_json_input
 
 
 def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
-    """Main deep dive tab"""
+    """Main deep dive tab - research, script, and database save workflow"""
     
     st.header("🔬 Deep Dive Research")
-    st.caption("**The FeedRoom Strategic Clash Analysis**")
+    st.caption("**The Feedroom Strategic Clash Analysis**")
     
     if 'google_data' not in st.session_state or 'twitter_data' not in st.session_state:
         st.info("📥 Collect data first")
@@ -26,7 +25,6 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
     
     st.divider()
     
-    # Keyword selector
     render_keyword_selector_dropdown()
     
     if 'deepdive_keyword' not in st.session_state:
@@ -34,11 +32,10 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
     
     st.divider()
     
-    # Phase navigation
     phase = st.session_state.get('deepdive_phase', 1)
     
-    phase_cols = st.columns(3)
-    phases = [(1, "Research"), (2, "Script"), (3, "Audio")]
+    phase_cols = st.columns(2)
+    phases = [(1, "Research"), (2, "Script & Save")]
     
     for idx, (phase_num, phase_name) in enumerate(phases):
         with phase_cols[idx]:
@@ -49,13 +46,10 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
     
     st.divider()
     
-    # Render phase
     if phase == 1:
         render_phase1_research(gemini_pro, gemini_flash)
     elif phase == 2:
-        render_phase2_script(gemini_pro, gemini_flash)
-    elif phase == 3:
-        render_phase3_audio(supabase)
+        render_phase2_script_and_save(gemini_pro, gemini_flash, supabase)
 
 
 def render_keyword_selector_dropdown():
@@ -71,7 +65,7 @@ def render_keyword_selector_dropdown():
     combined_df = pd.concat([google_df, twitter_df], ignore_index=True)
     
     if len(combined_df) == 0:
-        st.warning("No data")
+        st.warning("No data available")
         return
     
     col1, col2, col3 = st.columns(3)
@@ -114,20 +108,29 @@ def render_keyword_selector_dropdown():
     
     st.divider()
     
-    # Display metadata
     st.markdown("### 📋 Selected Keyword")
     
     col_meta1, col_meta2 = st.columns(2)
     
     with col_meta1:
-        st.markdown(f"""<div style="background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding:20px; border-radius:12px; color:white;"><h3 style="margin:0;">🎯 {selected_keyword}</h3></div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+            padding:20px; border-radius:12px; color:white;">
+            <h3 style="margin:0;">🎯 {selected_keyword}</h3></div>""",
+            unsafe_allow_html=True
+        )
         st.markdown(f"**🌍 Region:** {selected_region}")
         st.markdown(f"**📱 Platform:** {selected_platform}")
         st.markdown(f"**📂 Category:** {keyword_row.get('category', 'N/A')}")
     
     with col_meta2:
         volume = keyword_row.get(vol_col, 0) if vol_col else 0
-        st.markdown(f"""<div style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); padding:20px; border-radius:12px; color:white;"><h3 style="margin:0;">📊 {volume:,}</h3></div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            padding:20px; border-radius:12px; color:white;">
+            <h3 style="margin:0;">📊 {volume:,}</h3></div>""",
+            unsafe_allow_html=True
+        )
         st.markdown(f"**🚀 Velocity:** {keyword_row.get('velocity', 'steady')}")
         st.markdown(f"**💭 Sentiment:** {keyword_row.get('public_sentiment', keyword_row.get('primary_sentiment', 'curious'))}")
     
@@ -165,7 +168,15 @@ def render_phase1_research(gemini_pro, gemini_flash):
         if st.button("🚀 Research", type="primary", use_container_width=True):
             with st.spinner("🔍 Researching..."):
                 try:
-                    prompt = get_deepdive_research_prompt(kw['keyword'], kw['region'], kw.get('context', ''), kw.get('why_trending', ''), kw.get('volume', 0), kw.get('velocity', 'steady'), kw.get('sentiment', 'curious'))
+                    prompt = get_deepdive_research_prompt(
+                        kw['keyword'], 
+                        kw['region'], 
+                        kw.get('context', ''), 
+                        kw.get('why_trending', ''), 
+                        kw.get('volume', 0), 
+                        kw.get('velocity', 'steady'), 
+                        kw.get('sentiment', 'curious')
+                    )
                     response = gemini_pro.generate_content(prompt)
                     research_data, error = parse_deepdive_research(response.text)
                     
@@ -180,7 +191,15 @@ def render_phase1_research(gemini_pro, gemini_flash):
     
     with col_manual:
         if st.button("📋 Manual", use_container_width=True):
-            prompt = get_deepdive_research_prompt(kw['keyword'], kw['region'], kw.get('context', ''), kw.get('why_trending', ''), kw.get('volume', 0), kw.get('velocity', 'steady'), kw.get('sentiment', 'curious'))
+            prompt = get_deepdive_research_prompt(
+                kw['keyword'], 
+                kw['region'], 
+                kw.get('context', ''), 
+                kw.get('why_trending', ''), 
+                kw.get('volume', 0), 
+                kw.get('velocity', 'steady'), 
+                kw.get('sentiment', 'curious')
+            )
             st.session_state['dd_research_prompt'] = prompt
         
         if 'dd_research_prompt' in st.session_state:
@@ -201,7 +220,6 @@ def render_phase1_research(gemini_pro, gemini_flash):
             st.session_state['deepdive_finetune_type'] = 'research'
             st.rerun()
     
-    # Display research
     if 'deepdive_research' in st.session_state:
         st.divider()
         display_research_summary(st.session_state['deepdive_research'])
@@ -214,7 +232,7 @@ def render_phase1_research(gemini_pro, gemini_flash):
 
 
 def parse_deepdive_research(research_json):
-    """Parse research JSON with strategic_clash structure"""
+    """Parse and validate research JSON structure"""
     try:
         data = parse_json_input(research_json)
         
@@ -224,11 +242,11 @@ def parse_deepdive_research(research_json):
         required = ['keyword', 'simple_clash', 'lead_metric', 'strategic_clash', 'sources']
         missing = [f for f in required if f not in data]
         if missing:
-            return None, f"Missing: {', '.join(missing)}"
+            return None, f"Missing fields: {', '.join(missing)}"
         
         clash = data.get('strategic_clash', {})
         if not isinstance(clash, dict):
-            return None, "'strategic_clash' must be object"
+            return None, "'strategic_clash' must be an object"
         
         required_clash = ['side_a_logic', 'side_b_fear', 'the_deep_why']
         missing_clash = [f for f in required_clash if f not in clash]
@@ -241,11 +259,17 @@ def parse_deepdive_research(research_json):
 
 
 def display_research_summary(research):
-    """Display strategic clash research"""
+    """Display strategic clash research summary"""
     st.markdown("### 📊 Research Summary")
     
-    # Lead Metric
-    st.markdown(f"""<div style="background:linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); padding:30px; border-radius:15px; color:white; text-align:center; margin:20px 0;"><h2 style="margin:0;">📊 LEAD METRIC</h2><h1 style="font-size:48px; margin:20px 0;">{research.get('lead_metric', 'N/A')}</h1></div>""", unsafe_allow_html=True)
+    st.markdown(
+        f"""<div style="background:linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); 
+        padding:30px; border-radius:15px; color:white; text-align:center; margin:20px 0;">
+        <h2 style="margin:0;">📊 LEAD METRIC</h2>
+        <h1 style="font-size:48px; margin:20px 0;">{research.get('lead_metric', 'N/A')}</h1>
+        </div>""",
+        unsafe_allow_html=True
+    )
     
     st.info(f"**🎯 Simple Clash:** {research.get('simple_clash', 'N/A')}")
     
@@ -254,7 +278,6 @@ def display_research_summary(research):
     
     st.divider()
     
-    # Strategic Clash
     st.markdown("### ⚔️ The Strategic Clash")
     
     clash = research.get('strategic_clash', {})
@@ -263,33 +286,53 @@ def display_research_summary(research):
     
     with col_a:
         st.markdown("#### ✅ Side A: New Logic")
-        st.markdown(f"""<div style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); padding:20px; border-radius:10px; color:white; min-height:150px;"><p style="font-size:15px; line-height:1.6;">{clash.get('side_a_logic', 'N/A')}</p></div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            padding:20px; border-radius:10px; color:white; min-height:150px;">
+            <p style="font-size:15px; line-height:1.6;">{clash.get('side_a_logic', 'N/A')}</p>
+            </div>""",
+            unsafe_allow_html=True
+        )
     
     with col_b:
         st.markdown("#### ⚠️ Side B: Traditional Fear")
-        st.markdown(f"""<div style="background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding:20px; border-radius:10px; color:white; min-height:150px;"><p style="font-size:15px; line-height:1.6;">{clash.get('side_b_fear', 'N/A')}</p></div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+            padding:20px; border-radius:10px; color:white; min-height:150px;">
+            <p style="font-size:15px; line-height:1.6;">{clash.get('side_b_fear', 'N/A')}</p>
+            </div>""",
+            unsafe_allow_html=True
+        )
     
     st.markdown("#### 🔑 The Secret Sauce")
-    st.markdown(f"""<div style="background:linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding:25px; border-radius:10px; color:white;"><p style="font-size:17px; line-height:1.7;">{clash.get('the_deep_why', 'N/A')}</p></div>""", unsafe_allow_html=True)
+    st.markdown(
+        f"""<div style="background:linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
+        padding:25px; border-radius:10px; color:white;">
+        <p style="font-size:17px; line-height:1.7;">{clash.get('the_deep_why', 'N/A')}</p>
+        </div>""",
+        unsafe_allow_html=True
+    )
     
-    # Sources
     sources = research.get('sources', [])
     if sources:
         with st.expander("📚 Sources", expanded=False):
             for idx, src in enumerate(sources, 1):
-                st.markdown(f"**{idx}. [{src.get('title', 'Source')}]({src.get('url', '#')})** - Reliability: {src.get('reliability', 'N/A')}")
+                st.markdown(
+                    f"**{idx}. [{src.get('title', 'Source')}]({src.get('url', '#')})** - "
+                    f"Reliability: {src.get('reliability', 'N/A')}"
+                )
 
 
-def render_phase2_script(gemini_pro, gemini_flash):
-    """Phase 2: Script generation"""
-    st.markdown("### 🎬 Phase 2: Script Generation")
+def render_phase2_script_and_save(gemini_pro, gemini_flash, supabase):
+    """Phase 2: Script generation, editing, and database save"""
+    st.markdown("### 🎬 Phase 2: Script Generation & Database Save")
     
     research = st.session_state.get('deepdive_research', {})
     kw = st.session_state.get('deepdive_keyword', {})
     
     if not research:
-        st.error("❌ No research. Return to Phase 1.")
-        if st.button("⬅️ Back"):
+        st.error("❌ No research available. Return to Phase 1.")
+        if st.button("⬅️ Back to Research"):
             st.session_state['deepdive_phase'] = 1
             st.rerun()
         return
@@ -298,20 +341,19 @@ def render_phase2_script(gemini_pro, gemini_flash):
     
     with col_auto:
         if st.button("🚀 Generate Script", type="primary", use_container_width=True):
-            with st.spinner("📝 Generating..."):
+            with st.spinner("📝 Generating script..."):
                 try:
                     prompt = get_deepdive_script_prompt(research, kw['keyword'], kw['region'])
                     response = gemini_pro.generate_content(prompt)
                     assembly = parse_json_input(response.text)
                     
-                    if assembly and 'assembly_logic' in assembly:
+                    if assembly and 'audio_script' in assembly:
                         st.session_state['deepdive_assembly'] = assembly
-                        logic = assembly.get('assembly_logic', {})
-                        st.session_state['deepdive_script'] = logic.get('audio_script', '')
+                        st.session_state['deepdive_script'] = assembly.get('audio_script', '')
                         st.success("✅ Script generated!")
                         st.rerun()
                     else:
-                        st.error("❌ Invalid structure")
+                        st.error("❌ Invalid script structure")
                 except Exception as e:
                     st.error(f"❌ {str(e)}")
     
@@ -326,13 +368,12 @@ def render_phase2_script(gemini_pro, gemini_flash):
             
             if st.button("Parse", use_container_width=True):
                 assembly = parse_json_input(manual_json)
-                if assembly and 'assembly_logic' in assembly:
+                if assembly and 'audio_script' in assembly:
                     st.session_state['deepdive_assembly'] = assembly
-                    logic = assembly.get('assembly_logic', {})
-                    st.session_state['deepdive_script'] = logic.get('audio_script', '')
+                    st.session_state['deepdive_script'] = assembly.get('audio_script', '')
                     st.rerun()
                 else:
-                    st.error("❌ Invalid structure")
+                    st.error("❌ Invalid script structure")
     
     with col_ft:
         if st.button("⚙️ Fine-Tune", type="secondary", use_container_width=True):
@@ -340,14 +381,13 @@ def render_phase2_script(gemini_pro, gemini_flash):
             st.session_state['deepdive_finetune_type'] = 'script'
             st.rerun()
     
-    # Display editor
     if 'deepdive_assembly' in st.session_state:
         st.divider()
-        display_script_editor()
+        display_script_editor(supabase)
 
 
-def display_script_editor():
-    """Script editor"""
+def display_script_editor(supabase):
+    """Script editor with preview and database save"""
     st.markdown("### ✏️ Edit Script")
     
     col_left, col_right = st.columns([1, 1])
@@ -355,23 +395,42 @@ def display_script_editor():
     with col_left:
         st.markdown("**📝 EDIT:**")
         if 'deepdive_script' not in st.session_state:
-            logic = st.session_state['deepdive_assembly'].get('assembly_logic', {})
-            st.session_state['deepdive_script'] = logic.get('audio_script', '')
+            st.session_state['deepdive_script'] = st.session_state['deepdive_assembly'].get('audio_script', '')
         
-        edited = st.text_area("Script:", st.session_state['deepdive_script'], height=400, key='dd_edit', label_visibility="collapsed")
+        edited = st.text_area(
+            "Script:",
+            st.session_state['deepdive_script'],
+            height=400,
+            key='dd_edit',
+            label_visibility="collapsed"
+        )
         st.session_state['deepdive_script'] = edited
     
     with col_right:
         st.markdown("**📄 PREVIEW:**")
-        st.markdown(f"""<div style="background:#1a1a1a; padding:20px; border-radius:10px; border-left:4px solid #8b5cf6; max-height:400px; overflow-y:auto; font-size:16px; line-height:1.8; color:#f0f0f0;">{edited.replace(chr(10), '<br><br>')}</div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:#1a1a1a; padding:20px; border-radius:10px; 
+            border-left:4px solid #8b5cf6; max-height:400px; overflow-y:auto; 
+            font-size:16px; line-height:1.8; color:#f0f0f0;">
+            {edited.replace(chr(10), '<br><br>')}</div>""",
+            unsafe_allow_html=True
+        )
         
         wc = len(edited.split())
         color = "#10b981" if 120 <= wc <= 135 else "#f59e0b" if 110 <= wc <= 145 else "#ef4444"
         status = "✅ Perfect" if 120 <= wc <= 135 else "⚠️ Close" if 110 <= wc <= 145 else "❌ Revise"
         
-        st.markdown(f"""<div style="background:{color}; padding:10px; border-radius:8px; color:white; text-align:center; margin-top:10px;"><strong>{status}</strong> | {wc} words | ⏱️ ~{wc/150:.1f} min</div>""", unsafe_allow_html=True)
+        st.markdown(
+            f"""<div style="background:{color}; padding:10px; border-radius:8px; 
+            color:white; text-align:center; margin-top:10px;">
+            <strong>{status}</strong> | {wc} words | ⏱️ ~{wc/150:.1f} min</div>""",
+            unsafe_allow_html=True
+        )
     
     st.divider()
+    
+    st.markdown("### 💾 Save to Database")
+    st.caption("Save complete deep dive research, script, and metadata")
     
     col1, col2 = st.columns(2)
     
@@ -381,79 +440,59 @@ def display_script_editor():
             st.rerun()
     
     with col2:
-        if st.button("✅ Proceed to Audio", type="primary", use_container_width=True):
-            st.session_state['deepdive_phase'] = 3
-            st.rerun()
+        if st.button("💾 Save to Database", type="primary", use_container_width=True):
+            if supabase:
+                with st.spinner("💾 Saving to database..."):
+                    try:
+                        success, message = save_deepdive_to_database(supabase)
+                        if success:
+                            st.success(message)
+                            st.balloons()
+                        else:
+                            st.error(message)
+                    except Exception as e:
+                        st.error(f"❌ Error: {str(e)}")
+            else:
+                st.error("❌ Supabase not configured")
 
 
-def render_phase3_audio(supabase):
-    """Phase 3: Audio upload + DB save"""
-    st.markdown("### 🎙️ Phase 3: Audio Upload")
-    
-    if 'deepdive_script' in st.session_state:
-        with st.expander("📄 View Script", expanded=True):
-            st.markdown(st.session_state['deepdive_script'])
-            wc = len(st.session_state['deepdive_script'].split())
-            st.caption(f"📊 {wc} words (~{wc/150:.1f} min)")
-    
-    uploaded = st.file_uploader("Upload audio:", type=['mp3', 'wav', 'm4a'], key='dd_audio')
-    
-    if uploaded:
-        kw = st.session_state['deepdive_keyword']['keyword']
-        audio_path = f"images/deepdive_{kw[:20].replace(' ', '_')}_audio.mp3"
+def save_deepdive_to_database(supabase):
+    """Save complete deep dive to database with proper field mapping"""
+    try:
+        from db_operations import save_deepdive_to_db
         
-        if not os.path.exists('images'):
-            os.makedirs('images')
+        kw = st.session_state.get('deepdive_keyword', {})
+        research = st.session_state.get('deepdive_research', {})
+        assembly = st.session_state.get('deepdive_assembly', {})
+        script = st.session_state.get('deepdive_script', '')
         
-        with open(audio_path, 'wb') as f:
-            f.write(uploaded.getbuffer())
+        youtube_metadata = assembly.get('youtube_metadata', {})
         
-        st.success(f"✅ Saved to {audio_path}")
-        st.audio(uploaded)
-        st.session_state['deepdive_audio_path'] = audio_path
-        st.session_state['deepdive_audio_uploaded'] = True
-    
-    st.divider()
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("⬅️ Back to Script", type="secondary", use_container_width=True):
-            st.session_state['deepdive_phase'] = 2
-            st.rerun()
-    
-    with col2:
-        if st.session_state.get('deepdive_audio_uploaded', False):
-            if st.button("💾 Save to Database", type="primary", use_container_width=True):
-                if supabase:
-                    with st.spinner("💾 Saving..."):
-                        try:
-                            kw = st.session_state['deepdive_keyword']
-                            research = st.session_state['deepdive_research']
-                            assembly = st.session_state['deepdive_assembly']
-                            
-                            record = {
-                                'keyword': kw['keyword'],
-                                'region': kw['region'],
-                                'platform': kw.get('platform', 'N/A'),
-                                'category': kw['category'],
-                                'research_data': research,
-                                'audio_script': st.session_state.get('deepdive_script', ''),
-                                'youtube_metadata': assembly.get('youtube_metadata', {}),
-                                'publish_date': date.today().isoformat()
-                            }
-                            
-                            result = supabase.table('deep_dive_research').insert(record).execute()
-                            
-                            if result.data:
-                                st.success("✅ Saved to database!")
-                                st.balloons()
-                            else:
-                                st.error("❌ Save failed")
-                        except Exception as e:
-                            st.error(f"❌ {str(e)}")
-                else:
-                    st.error("❌ Supabase not configured")
+        deepdive_data = {
+            'keyword': kw.get('keyword', ''),
+            'region': kw.get('region', ''),
+            'platform': kw.get('platform', ''),
+            'search_volume': kw.get('volume', 0),
+            'velocity': kw.get('velocity', ''),
+            'sentiment': kw.get('sentiment', ''),
+            'category': kw.get('category', ''),
+            'research_data': research,
+            'sources_summary': ', '.join([src.get('title', '') for src in research.get('sources', [])]),
+            'script_final': script,
+            'youtube_title': youtube_metadata.get('title', ''),
+            'youtube_description': youtube_metadata.get('description', ''),
+            'youtube_hook': youtube_metadata.get('hook', ''),
+            'hashtags': youtube_metadata.get('hashtags', []),
+            'thumbnail_prompt': youtube_metadata.get('thumbnail_prompt', ''),
+            'image_prompts': assembly.get('visual_prompts', {})
+        }
+        
+        success, message, record_id = save_deepdive_to_db(supabase, deepdive_data, status='finalized')
+        
+        return success, message
+        
+    except Exception as e:
+        return False, f"Failed to save: {str(e)}"
 
 
 def render_deepdive_finetuner():
@@ -463,8 +502,8 @@ def render_deepdive_finetuner():
     ft_type = st.session_state.get('deepdive_finetune_type', 'research')
     
     st.info(f"Fine-tuning: **{ft_type}** prompt")
-    st.caption("💡 Copy sections from old tab_deepdive.py finetune functions")
+    st.caption("Configure prompt parameters for optimal results")
     
-    if st.button("❌ Exit", type="secondary"):
+    if st.button("❌ Exit Fine-Tune Mode", type="secondary"):
         st.session_state['deepdive_finetune_mode'] = False
         st.rerun()
