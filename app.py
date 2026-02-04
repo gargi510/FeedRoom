@@ -83,10 +83,11 @@ st.title("📊 The FeedRoom - Trend Intelligence Platform")
 st.caption("**Daily Intelligence Pipeline: Collect → Analyze → Dashboard → Scripts → Deep Dive**")
 st.divider()
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "📥 Data Collection",
     "🧠 Intelligence Analysis", 
     "📊 Intelligence Dashboard",
+    "🇮🇳 India Dashboard",
     "🎬 Daily Analysis",
     "🔬 Deep Dive Research",
     "📈 Weekly Insights"
@@ -104,15 +105,19 @@ with tab3:
     from tab_intelligence_dashboard import render_intelligence_dashboard_tab
     render_intelligence_dashboard_tab(gemini_pro, gemini_flash, supabase)
 
-with tab4:
+with tab4: 
+    from tab_india_dashboard import render_india_intelligence_dashboard
+    render_india_intelligence_dashboard(supabase)
+    
+with tab5:
     from tab_daily_analysis import render_daily_analysis_tab
     render_daily_analysis_tab(gemini_pro, gemini_flash, supabase)
 
-with tab5:
+with tab6:
     from tab_deepdive_research import render_deepdive_research_tab
     render_deepdive_research_tab(gemini_pro, gemini_flash, supabase)
 
-with tab6:
+with tab7:
     from tab_weekly_insights import render_weekly_insights_tab
     render_weekly_insights_tab(supabase)
 

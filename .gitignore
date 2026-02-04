@@ -9,5 +9,10 @@ models/
 *.wav
 *.mp3
 
+assets/
+fonts/
+voice cloning/
+
+
 # Ignore Streamlit state
 .streamlit/

@@ -13,7 +13,7 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
     """Main deep dive tab - research, script, and database save workflow"""
     
     st.header("🔬 Deep Dive Research")
-    st.caption("**The Feedroom Strategic Clash Analysis**")
+    st.caption("**The FeedRoom Strategic Clash Analysis**")
     
     if 'google_data' not in st.session_state or 'twitter_data' not in st.session_state:
         st.info("📥 Collect data first")
@@ -417,13 +417,13 @@ def display_script_editor(supabase):
         )
         
         wc = len(edited.split())
-        color = "#10b981" if 120 <= wc <= 135 else "#f59e0b" if 110 <= wc <= 145 else "#ef4444"
-        status = "✅ Perfect" if 120 <= wc <= 135 else "⚠️ Close" if 110 <= wc <= 145 else "❌ Revise"
+        duration = wc / 150
         
+        # Deep dive can be any length - just show info, no validation
         st.markdown(
-            f"""<div style="background:{color}; padding:10px; border-radius:8px; 
+            f"""<div style="background:#10b981; padding:10px; border-radius:8px; 
             color:white; text-align:center; margin-top:10px;">
-            <strong>{status}</strong> | {wc} words | ⏱️ ~{wc/150:.1f} min</div>""",
+            <strong>📊 Script Stats</strong> | {wc} words | ⏱️ ~{duration:.1f} min</div>""",
             unsafe_allow_html=True
         )
     

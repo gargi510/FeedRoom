@@ -109,9 +109,15 @@ def save_daily_content_to_db(supabase, content_data, publish_date=None):
             return val if val is not None else default
         
         def safe_json(data, key, default=None):
-            val = data.get(key, default if default is not None else {})
+            """Safely get JSON field, return None for empty to avoid JSONB errors"""
+            val = data.get(key, default)
+            # Supabase JSONB accepts NULL but rejects empty JSON objects {}
             if val is None:
-                return default if default is not None else {}
+                return None
+            if isinstance(val, dict) and len(val) == 0:
+                return None
+            if isinstance(val, list) and len(val) == 0:
+                return None
             return val
         
         record = {
@@ -603,9 +609,15 @@ def save_deepdive_to_db(supabase, deepdive_data, status='needs_finetuning'):
             return val if val is not None else default
         
         def safe_json(data, key, default=None):
-            val = data.get(key, default if default is not None else {})
+            """Safely get JSON field, return None for empty to avoid JSONB errors"""
+            val = data.get(key, default)
+            # Supabase JSONB accepts NULL but rejects empty JSON objects {}
             if val is None:
-                return default if default is not None else {}
+                return None
+            if isinstance(val, dict) and len(val) == 0:
+                return None
+            if isinstance(val, list) and len(val) == 0:
+                return None
             return val
         
         record = {
