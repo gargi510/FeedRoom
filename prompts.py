@@ -249,108 +249,175 @@ You are the Lead Intelligence Analyst for The FeedRoom. Your mission is to synth
 
 def get_assembly_prompt_india(intelligence_grid, production_mood):
     """
-    Generate India script assembly with analytical authority
+    Generate India script assembly - BROADCAST NEWS STYLE
+    Target: 60-second script with punchy, data-driven segments
     """
-    sentiment = production_mood.get('overall_sentiment', 0)
-    
-    if sentiment < -0.6:
-        tone_directive = "Serious, authoritative. This requires attention."
-        emotion_tag = "[EMOTION: GRAVITY/URGENCY]"
-    elif sentiment > 0.4:
-        tone_directive = "Confident, dynamic. This is significant."
-        emotion_tag = "[EMOTION: CONFIDENCE/CLARITY]"
-    else:
-        tone_directive = "Analytical, questioning. This warrants examination."
-        emotion_tag = "[EMOTION: ANALYTICAL/MEASURED]"
     
     themes = intelligence_grid.get('weather_grid', [])
-    outliers = intelligence_grid.get('outliers', [])
+    outliers = intelligence_grid.get('anomalies', [])
     
-    themes_summary = "\n".join([
-        f"Pattern {i+1}: {t.get('theme', 'N/A')} - {t.get('big_question', 'N/A')}"
+    # Extract data for reference
+    themes_data = "\n".join([
+        f"Theme {i+1}: {t.get('theme', 'N/A')} | Keywords: {', '.join(t.get('keywords', []))} | Signal: {t.get('data_signal', 'N/A')} | Why: {t.get('deep_why', 'N/A')}"
         for i, t in enumerate(themes[:2])
     ])
     
-    outliers_summary = "\n".join([
-        f"Anomaly {i+1}: {o.get('keyword', 'N/A')} - {o.get('explanation', 'N/A')}"
-        for i, o in enumerate(outliers[:1])
+    outliers_data = "\n".join([
+        f"Outlier {i+1}: {o.get('keyword', 'N/A')} | Velocity: {o.get('velocity', 'N/A')} | Why: {o.get('explanation', 'N/A')}"
+        for i, o in enumerate(outliers[:2])
     ])
     
     return f"""
 <identity>
-You are an Authoritative Analyst decoding internet patterns. Your voice is calm, logical, confident, and data-driven. You make sense of feeds and highlight patterns, anomalies, and opportunities.
+You are a Broadcast Journalist writing a 60-second data report for YouTube Shorts. Your voice is sharp, factual, and conversational. You translate trends into clear stories that anyone can understand in one take.
 </identity>
 
-<tone_directive>
-{tone_directive}
-{emotion_tag}
-Use Sophisticated Modern Indian English throughout.
-</tone_directive>
+<mandatory_examples>
+Here are 3 PERFECT scripts you must emulate:
 
-<script_logic_constraints>
-- FIXED INTRO: "The last 24 decoded in 60. Here's what's trending?"
-- FIXED OUTRO: "What's on your feed today? Comment below!"
-- STRUCTURE:
-  * Segment 1: Major Pattern (30-50 words)
-  * Segment 2: Major Pattern (35-50 words)
-  * Outlier: Anomaly (35-50 words)
-- Each segment MUST end with exactly ONE sharp, thought-provoking rhetorical question
-- Total script: fits within 60 seconds
-- Sentances should be short and not verbose. 
--Start with a relevant segment name 1-3 words followed by analytical catchy metric. 
--In case metion 'people are searching or keyword is trending' based on source platform
-- Voice: authoritative, analytical, data-driven
-- Language: Layman Sophisticated Modern Indian English (NO slang, NO Hinglish, NO memes)
-</script_logic_constraints>
+**Example 1 (Feb 5):**
+Intro: The last 24 decoded in 60. Search trends are chasing glory, while social buzz is fueled by anxiety. Let's look at the data.
+Segment 1: The National Escape: Two million searched for cricket—a national mood booster, or just an escape from the real news?
+Segment 2: The Trade Chain Reaction: 800,000 are debating the India-US trade deal. The chain reaction? Shifting from Russian oil to US energy drains our reserves, weakens the Rupee, and has pushed Gold to a record 1.6 Lakh. Global policy is hitting your savings.
+Segment 3: The AI Competitor: Today's surprise? A 100k search breakout for Anthropic AI. As 2 Lakh Crore wiped off TCS and Infosys, the reason is clear: new agents are assuming full ownership of the coding and legal work once held by humans. The era of the AI assistant is over... we've officially met our competitor.
+Outro: The proof is in the numbers. Check the Community Post for the full data. Subscribe to stay ahead. Catch you tomorrow.
 
-<production_directive>
-Visual Style: {production_mood.get('visual_background_prompt', 'dynamic')}
-Color Palette: {production_mood.get('vibe_color_hex', '#ff9933')}
-Vocal Energy: {production_mood.get('vocal_tone', 'authoritative')}
-</production_directive>
+**Example 2 (Feb 6):**
+Intro: Yesterday: Gold Rush. Today: Farmer Crisis. Decoding The Last 24 in 60 seconds. Data starts now.
+Segment 1: The Hidden Cost: +450% surge in Parliament protests. That record 1.6 Lakh Gold had a hidden cost: 18% U.S. textile tariffs in exchange for zero tariffs on American imports. The fear? Subsidized U.S. crops flooding our markets and crushing local farmers. For 60% of our workforce, this is a survival test.
+Segment 2: Orbital Sovereignty: Next: Orbital AI. SpaceX and xAI's new $1.25 Trillion powerhouse aims for 1 Million "Space Brain" satellites. Musk is moving data centers to orbit for solar power as Earth's grid hits a wall. The risk: "off-planet" data bypasses India's security laws. The sovereign internet is changing.
+Segment 3: The Earth's Rhythm: +1200% breakout for Pt. Birju Maharaj's 88th anniversary. As AI launches to orbit, India remembers the maestro who found rhythm in the motion of the Earth to stay grounded.
+Outro: Full data in Community Post. Subscribe. Catch you tomorrow.
+
+**Example 3 (Feb 7):**
+Intro: Record-breaking wins vs. record-breaking stress. This is the last 24 decoded in 60 seconds.
+Segment 1: The Next-Gen Era: First: A total takeover. Sports own 8 of India's top 10 trends. But look closer—it's the Next Gen Era. We secured a 6th U19 World Cup title with Vaibhav Suryavanshi's record 175, while RCB won the WPL in a historic chase. We aren't just watching sports; we are witnessing the rise of India's new icons.
+Segment 2: The Focus Frequency: But the pressure is real. Exams drive a record 4.1 Crore student registrations for Pariksha Pe Charcha. As millions seek survival tips, Lata Mangeshkar engagement surged 400%. Her music is now a "Focus Frequency" for a generation finding calm in heritage.
+Segment 3: The Wallet Shield: Finally: A +2000% RBI breakout. While rates are steady, the real news is the "Digital Fraud Shield." RBI will now compensate up to ₹25,000 for online scams—even if you shared an OTP. Security over savings.
+Outro: Full data in the next post. Follow for updates. Catch you tomorrow.
+</mandatory_examples>
+
+<script_formula>
+**STRUCTURE (NON-NEGOTIABLE):**
+
+**INTRO (1 sentence):**
+- Pattern: "[Yesterday's theme] vs [Today's theme]. Decoding the last 24 in 60 seconds. [Data starts now/Let's look at the data]."
+- OR: "The last 24 decoded in 60. [One-line contrast of search vs social]. Let's look at the data."
+
+**SEGMENT 1 (40-55 words):**
+Format: **The [Pattern Name]:** [Opening hook]. [Data point with exact number]. [Context sentence]. [Impact/Why it matters]. [Optional: Rhetorical question OR declarative punch].
+
+**SEGMENT 2 (40-55 words):**
+Format: **The [Pattern Name]:** [Transition word: Next/But/Meanwhile]. [Data point]. [Explanation of mechanism/chain reaction]. [Impact on everyday life]. [Declarative statement OR question].
+
+**SEGMENT 3 (40-55 words):**
+Format: **The [Outlier Name]:** [Transition: Finally/Today's surprise/Last]. [Velocity metric]. [Explanation]. [Larger meaning/connection]. [Strong closing statement].
+
+**OUTRO (1 sentence):**
+- Fixed: "Full data in [Community Post/next post]. [Subscribe/Follow for updates]. Catch you tomorrow."
+- OR: "The proof is in the numbers. Check the Community Post for the full data. Subscribe to stay ahead. Catch you tomorrow."
+
+</script_formula>
+
+<sentence_rules>
+**CRITICAL WRITING CONSTRAINTS:**
+
+1. **MAX 15 WORDS PER SENTENCE**
+   - Break complex ideas into multiple short sentences
+   - Use periods, not commas, to separate ideas
+
+2. **BANNED PHRASES:**
+   - "In recent times", "It is important to note", "Essentially", "Furthermore", "Moreover"
+   - "This requires attention", "This warrants examination", "This is significant"
+   - Any phrase over 4 words that doesn't contain data or action
+
+3. **REQUIRED ELEMENTS PER SEGMENT:**
+   - At least ONE exact number (searches, percentage, rupee amount, count)
+   - At least ONE concrete noun (cricket, gold, farmers, satellites, RBI)
+   - At least ONE active verb (searched, surged, wiped, flooding, bypasses)
+
+4. **PATTERN NAME RULES:**
+   - Must be 2-4 words maximum
+   - Must use "The [Noun]" format (The National Escape, The Trade Chain Reaction, The AI Competitor)
+   - Should evoke the core tension/story
+
+5. **DATA PRESENTATION:**
+   - Always use Indian number formats: "2 million", "1.6 Lakh", "4.1 Crore"
+   - Percentages: "+450%", "400%", "+2000%"
+   - Velocity: "breakout", "surge", "spike" (not "rising" or "steady")
+
+6. **LOGICAL FLOW (MANDATORY):**
+   Each segment must follow: **Data Signal → Factual Context → Real-World Impact → (Optional) Question/Declaration**
+   
+   Example breakdown:
+   - Data: "Two million searched for cricket"
+   - Context: "a national mood booster"
+   - Impact: "or just an escape from the real news?"
+   - Question: (embedded in the impact)
+
+</sentence_rules>
 
 <intelligence_summary>
-{themes_summary}
+**THEMES TO COVER:**
+{themes_data}
 
-{outliers_summary}
+**OUTLIERS TO COVER:**
+{outliers_data}
 </intelligence_summary>
 
 <critical_rules>
-- NEVER invent data
-- Use ONLY keywords from intelligence grid
-- Keep intro/outro EXACTLY as specified
-- Write in authoritative, analytical voice
-- Write short, layman, humanlike sentences
-- Each segment ends with ONE rhetorical question only
-- Maintain clarity, brevity, and logical flow
-- Focus on data-driven insights that are immediately actionable
+**BEFORE WRITING, YOU MUST:**
+
+1. ✅ Identify the EXACT numbers from intelligence grid (don't invent)
+2. ✅ Create 3 pattern names (2-4 words each, using "The [Noun]" format)
+3. ✅ Check that each segment has: Data → Context → Impact → Question/Statement
+4. ✅ Verify NO sentence exceeds 15 words
+5. ✅ Confirm intro and outro match the fixed templates
+6. ✅ Ensure total script fits in 60 seconds when read aloud (test: 150-180 words total)
+
+**VALIDATION CHECKLIST:**
+- [ ] Does Segment 1 start with a pattern name?
+- [ ] Does each segment have at least ONE exact number?
+- [ ] Are all sentences under 15 words?
+- [ ] Is the logical flow clear: Data → Context → Impact?
+- [ ] Does the script sound natural when read aloud?
+- [ ] Are you using ONLY keywords from the intelligence grid?
+- [ ] Is the outro exactly as specified?
+
 </critical_rules>
 
-Return JSON:
+<output_json>
+Return ONLY this JSON structure:
 ```json
 {{
   "script_assembly": {{
-    "intro": "The last 24 decoded in 60 ! Here's what's trending?",
-    "segment_1": "30-50 word analytical segment about major pattern 1, ending with one rhetorical question",
-    "segment_2": "30-50 word analytical segment about major pattern 2, ending with one rhetorical question",
-    "outlier": "30-50 word analytical segment about anomaly, ending with one rhetorical question",
-    "outro": "What's on your feed today? Comment below!"
+    "intro": "[One sentence following the intro formula]",
+    "segment_1": "[Pattern Name]: [40-55 word segment with data, context, impact, question/statement]",
+    "segment_2": "[Pattern Name]: [40-55 word segment with data, context, impact, question/statement]",
+    "segment_3": "[Outlier Name]: [40-55 word segment with velocity, explanation, meaning]",
+    "outro": "[Fixed outro template]"
   }},
   "youtube_metadata": {{
-    "title": "60-char analytical title",
-    "description": "150-word description",
-    "hook": "First 10 seconds script",
-    "hashtags": ["#tag1", "#tag2", "#tag3"]
+    "title": "[Today's Date]: [3-4 word theme contrast] (Max 60 chars)",
+    "description": "Decoding the last 24 hours of India's internet trends.\\n\\nToday's Patterns:\\n- [Theme 1 name]\\n- [Theme 2 name]\\n- [Outlier name]\\n\\nData Sources: Google Trends + Social Media Analytics\\n\\n#PivotNote #TrendAnalysis #India",
+    "hook": "[First 10-15 words of intro]",
+    "hashtags": ["#PivotNote", "#keyword1", "#keyword2"]
   }},
   "visual_prompts": {{
-    "intro_visual": "AI image prompt",
-    "segment_1_visual": "AI image prompt",
-    "segment_2_visual": "AI image prompt",
-    "outlier_visual": "AI image prompt",
-    "outro_visual": "AI image prompt"
+    "intro_visual": "Split screen data dashboard, [theme contrast], minimalist charts --ar 9:16",
+    "segment_1_visual": "[Subject from pattern 1], [action/context], cinematic lighting --ar 9:16",
+    "segment_2_visual": "[Subject from pattern 2], [action/context], data overlay --ar 9:16",
+    "segment_3_visual": "[Outlier subject], [unique visual element], dramatic contrast --ar 9:16",
+    "outro_visual": "Clean CTA screen, subscribe button, data grid background --ar 9:16"
   }}
 }}
 ```
+</output_json>
+
+**FINAL REMINDER:**
+Your goal is to sound like a sharp broadcast journalist reading news headlines—NOT an academic analyst. Every word must earn its place. If a sentence doesn't have data, context, or impact, cut it.
+
+Write the script now.
 """
 
 
@@ -371,7 +438,7 @@ def get_assembly_prompt_usa(intelligence_grid, production_mood):
         emotion_tag = "[EMOTION: ANALYTICAL/MEASURED]"
     
     themes = intelligence_grid.get('weather_grid', [])
-    outliers = intelligence_grid.get('outliers', [])
+    outliers = intelligence_grid.get('anomalies', [])
     
     themes_summary = "\n".join([
         f"Pattern {i+1}: {t.get('theme', 'N/A')} - {t.get('big_question', 'N/A')}"
@@ -380,7 +447,7 @@ def get_assembly_prompt_usa(intelligence_grid, production_mood):
     
     outliers_summary = "\n".join([
         f"Anomaly {i+1}: {o.get('keyword', 'N/A')} - {o.get('explanation', 'N/A')}"
-        for i, o in enumerate(outliers[:1])
+        for i, o in enumerate(outliers[:2])
     ])
     
     return f"""
@@ -512,132 +579,183 @@ Return ONLY valid JSON within markdown block.
 
 def get_deepdive_script_prompt(research_data, keyword, region):
     """
-    Deep Dive Production Script - FIXED to match actual assembly structure
-    Returns: audio_script, youtube_metadata, visual_prompts (NOT assembly_logic)
+    Deep Dive Script - LAYMAN EXPLAINER FORMAT
+    Goal: Explain why it's trending, the clash, and the deeper why
     """
     
     return f"""
-You are the Script Director for FeedRoom Deep Dive. Convert this strategic clash into a CRISP 120-SECOND audio script.
+You are writing a YouTube script that explains a trending topic to someone who knows NOTHING about it.
 
-=== INPUT RESEARCH DATA ===
-{json.dumps(research_data, indent=2)}
+Your job: Make them understand WHY {keyword} is trending, WHAT the two sides are saying, and WHAT'S really going on beneath the surface.
 
-=== CRITICAL PRODUCTION CONSTRAINTS ===
+=== INPUT DATA ===
+{research_data}
 
-**SCRIPT LENGTH:** EXACTLY 120-130 words total. NOT ONE WORD MORE.
-**TIMING:** 120 seconds = 2 minutes at energetic speaking pace (1 word per second)
-**STRUCTURE:** Hook (15s) → Side A (30s) → Side B (30s) → Secret Sauce (35s) → Question (10s)
+=== SCRIPT GOAL ===
+After watching this, the viewer should be able to:
+1. Explain to a friend WHY {keyword} is trending
+2. Understand the TWO competing perspectives
+3. Know the HIDDEN factor that explains the real story
 
-=== SCRIPT FORMULA (MANDATORY) ===
+=== SCRIPT STRUCTURE (MANDATORY) ===
 
-**HOOK (First 15 seconds / 15-20 words):**
-- Start with LEAD METRIC from research
-- Format: "[NUMBER]. [What it means]. [Context sentence]."
-- Example: "Twelve point two lakh crore rupees. That is the 133 billion dollar bet India just placed on its own bones."
+**HOOK (15-20 seconds / 25-35 words):**
+Start with the LEAD METRIC from research.
+Format: "[BIG NUMBER]. [What it means in plain English]. Here's what's actually happening."
 
-**CONTEXT (Next 5 seconds / 5-7 words):**
-- ONE sentence explaining why keyword is trending
-- NO FLUFF
+Example structure:
+"Five point two billion dollars. That's how much money just moved into AI chips in the last 30 days. But this isn't just about technology—it's about survival. Here's why."
 
-**SIDE A - NEW LOGIC (Next 30 seconds / 30-35 words):**
-- Start with: "The government/advocates/proponents [action]"
-- State SIDE_A_LOGIC from research in concrete terms
-- Include ONE specific metric or example
-- End with "If this works, [benefit]."
+**CONTEXT (20-30 seconds / 35-50 words):**
+Explain WHAT {keyword} is and WHY it's trending NOW.
+- What is it? (in 8th-grade language)
+- Why is everyone talking about it today?
+- What specific event/announcement triggered this?
 
-**SIDE B - TRADITIONAL FEAR (Next 30 seconds / 30-35 words):**
-- Start with: "But the old guard/critics/skeptics [concern]"
-- State SIDE_B_FEAR from research in concrete terms
-- Include ONE specific risk or statistic
-- End with "If this fails, [consequence]."
+Use SHORT sentences. Max 12 words each.
+Avoid: "recently", "essentially", "paradigm", "ecosystem"
 
-**SECRET SAUCE (Next 35 seconds / 35-40 words):**
-- Start with: "The secret sauce?"
-- State THE_DEEP_WHY from research
-- Use CONCRETE physical language (NO abstract terms)
-- Connect to larger trend/pattern
-- Build urgency
+**SIDE A - THE OPTIMISTS (30-45 seconds / 50-75 words):**
+Explain the NEW LOGIC from research.
+- Who are these people? (government/companies/advocates)
+- What do they want?
+- Why do they think this is the future?
+- What's their BEST evidence?
 
-**CONCLUSION (Final 10 seconds / 8-10 words):**
-- Thought-provoking binary question
-- Format: "[Option A] or [Option B]? You decide." OR "[Big outcome]? Comment below."
+Include at least ONE concrete example or statistic.
+End with: "If they're right, [specific outcome]."
 
-=== LANGUAGE RULES (CRITICAL) ===
+**SIDE B - THE SKEPTICS (30-45 seconds / 50-75 words):**
+Explain the TRADITIONAL FEAR from research.
+- Who's worried? (critics/old guard/experts)
+- What scares them?
+- What could go wrong?
+- What's their BEST evidence?
 
-1. **8TH-GRADE PHYSICAL TERMS ONLY:**
-   - YES: "bones", "gravity well", "consumption hollow", "industrial heart", "empty pockets"
-   - NO: "paradigm", "synergy", "ecosystem", "framework", "infrastructure investment"
+Include at least ONE concrete risk or statistic.
+End with: "If they're right, [specific consequence]."
 
-2. **METRIC INTEGRATION:**
-   - Use at least 3 hard numbers from research
-   - Format large numbers for speech: "twelve point two lakh crore" NOT "₹12.2 trillion"
+**THE SECRET SAUCE (40-60 seconds / 70-100 words):**
+Reveal THE_DEEP_WHY from research.
+This is the HIDDEN factor most people don't see.
 
-3. **NO FILLER:**
-   - Cut: "In recent times", "It is important to note", "Essentially", "Furthermore"
-   - Every word must advance the argument
+Format:
+"But here's what nobody's talking about: [THE DEEP WHY]"
 
-4. **SENTENCE LENGTH:**
-   - Max 15 words per sentence
-   - Short punchy sentences create energy
+Explain:
+- What's the REAL reason this is happening?
+- What larger trend/pattern is driving this?
+- Why does this matter MORE than the surface debate?
 
-=== REQUIRED JSON OUTPUT (FIXED STRUCTURE) ===
+Use physical, concrete language:
+YES: "energy grid", "data centers", "supply chain", "wallet", "jobs"
+NO: "framework", "paradigm", "synergy", "ecosystem", "infrastructure"
+
+Connect to something viewers care about: money, jobs, daily life, freedom, security.
+
+**CONCLUSION (15-25 seconds / 25-40 words):**
+End with thought-provoking question OR bold prediction.
+
+Option 1 (Binary Question):
+"So the question is: [Option A] or [Option B]? The answer will define the next decade. What do you think?"
+
+Option 2 (Prediction):
+"[Bold statement about what will happen]. If I'm wrong, comment below and tell me why."
+
+Option 3 (Open Question):
+"[Provocative question that forces the viewer to pick a side]. Drop your take in the comments."
+
+=== LANGUAGE RULES ===
+
+1. **MAX 12 WORDS PER SENTENCE**
+   Break long ideas into multiple short sentences.
+   
+2. **8TH-GRADE VOCABULARY**
+   Banned words: paradigm, synergy, ecosystem, framework, infrastructure, leverage, utilize, facilitate
+   Use instead: pattern, teamwork, system, plan, foundation, use, help
+   
+3. **CONCRETE NOUNS ONLY**
+   YES: chips, factories, dollars, jobs, energy, data, machines, workers
+   NO: innovation, disruption, transformation, scalability, optimization
+   
+4. **ACTIVE VERBS**
+   YES: built, moved, crashed, surged, blocked, launched
+   NO: facilitated, enabled, catalyzed, optimized, leveraged
+   
+5. **NUMBERS IN SPEECH FORMAT**
+   - "five point two billion" NOT "5.2B"
+   - "twelve thousand" NOT "12K"
+   - "forty-five percent" NOT "45%"
+
+=== CRITICAL VALIDATION RULES ===
+
+Before finalizing, check:
+
+✅ Does the hook start with the LEAD METRIC?
+✅ Can a 14-year-old understand every sentence?
+✅ Are Side A and Side B roughly equal length (50-75 words each)?
+✅ Is the Secret Sauce the LONGEST section (70-100 words)?
+✅ Does it end with a question OR prediction?
+✅ Are all sentences under 12 words?
+✅ Did I avoid ALL abstract business jargon?
+✅ Is every claim backed by data from the research?
+
+=== REQUIRED JSON OUTPUT ===
 ```json
 {{
-  "audio_script": "[YOUR COMPLETE 120-130 WORD SCRIPT HERE - NO SECTION BREAKS, JUST FLOWING TEXT]",
+  "audio_script": "[YOUR COMPLETE 250-350 WORD SCRIPT - NO SECTION BREAKS, JUST FLOWING TEXT]",
   
   "youtube_metadata": {{
-    "title": "[Provocative Question with Metric]: {keyword}",
-    "description": "Deep Dive Analysis of {keyword}.\\n\\nKey Conflict: [One-line clash summary]\\n\\nLead Metric: [The big number]\\n\\nSources:\\n[List top 3 sources from research]",
-    "hashtags": ["#PivotNote", "#{keyword.replace(' ', '')}", "#DeepDive"],
-    "hook": "First 15-20 words of audio_script",
-    "thumbnail_prompt": "Cinematic data dashboard featuring {keyword} --ar 16:9"
+    "title": "Why Everyone's Talking About {keyword}: The Real Story",
+    "description": "Deep dive into {keyword}.\\n\\nThe Clash: [One-line summary of Side A vs Side B]\\n\\nThe Secret Sauce: [One-line summary of deep why]\\n\\nLead Metric: [The big number from hook]\\n\\nSources:\\n[Top 3 sources from research]\\n\\n#DeepDive #{keyword.replace(' ', '')} #Explained",
+    "hashtags": ["#DeepDive", "#{keyword.replace(' ', '')}", "#Explained", "#TheFeedRoom"],
+    "hook": "[First 25-35 words of audio_script]",
+    "thumbnail_prompt": "Split screen showing [Side A visual] vs [Side B visual], bold text: '{keyword}', cinematic lighting --ar 16:9"
   }},
   
   "visual_prompts": {{
-    "hook_visual": "[Cinematic shot type] + [Subject based on lead metric] + [Lighting mood] --ar 9:16",
-    "side_a_visual": "[Cinematic visual representing new logic/innovation] --ar 9:16",
-    "side_b_visual": "[Cinematic visual representing traditional concern/risk] --ar 9:16",
-    "analysis_visual": "[Cinematic visual representing the secret sauce/hidden factor] --ar 9:16",
-    "conclusion_visual": "Split screen, binary choice visual, minimalist --ar 9:16"
+    "hook_visual": "Dramatic shot of [lead metric visualization], data overlay, cinematic --ar 9:16",
+    "context_visual": "[What is {keyword}?], explainer style, clean background --ar 9:16",
+    "side_a_visual": "[Side A perspective], optimistic color grading, modern --ar 9:16",
+    "side_b_visual": "[Side B concern], cautionary color grading, traditional --ar 9:16",
+    "secret_sauce_visual": "[Hidden factor visualization], revelation moment, dramatic lighting --ar 9:16",
+    "conclusion_visual": "Question on screen, viewer choice visual, engaging --ar 9:16"
   }}
 }}
 ```
 
-=== CRITICAL VALIDATION RULES (READ CAREFULLY) ===
+=== WORD COUNT TARGET ===
 
-**BEFORE GENERATING, YOU MUST:**
+**TOTAL SCRIPT: 250-350 words (2-3 minutes at natural speaking pace)**
 
-1. ✅ Count every word in audio_script. Target: 120-130 words TOTAL.
-2. ✅ Verify LEAD METRIC appears in first 15 words
-3. ✅ Check that Side A and Side B are roughly equal length (30-35 words each)
-4. ✅ Ensure Secret Sauce is the longest section (35-40 words)
-5. ✅ Confirm ending with thought-provoking question (8-10 words)
-6. ✅ Verify NO abstract language - only concrete physical terms
-7. ✅ Check that visual_prompts follow format: [Shot] + [Subject] + [Lighting] + --ar 9:16
+Breakdown:
+- Hook: 25-35 words
+- Context: 35-50 words
+- Side A: 50-75 words
+- Side B: 50-75 words
+- Secret Sauce: 70-100 words (longest section)
+- Conclusion: 25-40 words
 
-**THESE ARE NOT SUGGESTIONS - THEY ARE REQUIREMENTS.**
+**If topic needs more explanation, you can go up to 500 words (4-5 minutes).**
+**But NEVER sacrifice clarity for brevity. Better to be 400 clear words than 250 confusing ones.**
 
-**IF YOUR SCRIPT IS OVER 135 WORDS, START OVER.**
+=== EXAMPLE STRUCTURE (NOT TO COPY, JUST TO UNDERSTAND FLOW) ===
 
-=== EXAMPLE OF CORRECT FORMAT ===
+"Twelve billion dollars. That's what India just bet on making its own computer chips. This isn't about phones. It's about survival. Here's what's happening.
 
-Here's what a CORRECT 127-word script looks like:
+India imports ninety-five percent of its chips. Every phone, every car, every defense system depends on foreign technology. One supply chain break? Everything stops. So the government just announced a massive chip manufacturing push.
 
-"Twelve point two lakh crore rupees. That is the 133 billion dollar bet India just placed on its own bones. This budget isn't a checkbook; it's a twenty-year blueprint. The government is building a 'gravity well' of high-speed rail and microchip plants to pull global factories onto our soil. If this works, India becomes the factory floor of Asia. But the old guard is terrified. They see a 'consumption hollow' because families got no tax cuts, and a two-percent hike in trading taxes is hitting wallets hard. If this fails, the economy stalls. The secret sauce? It's 'Trump-Proofing.' A massive six-hundred-forty percent surge in coal funding means absolute energy sovereignty. India is front-loading the pain now to ensure that if global trade wars explode, our industrial heart keeps beating. High-tech fortress or empty pockets? You decide."
+The optimists say this is brilliant. Build factories now, create half a million high-tech jobs, become self-reliant before the next global crisis. China did this twenty years ago. Look at them now. If India pulls this off, it becomes a tech superpower.
 
-**WORD COUNT: 127 ✅**
-**STRUCTURE: Hook → Context → Side A → Side B → Secret Sauce → Question ✅**
-**CONCRETE LANGUAGE: Yes (bones, gravity well, hollow, heart, pockets) ✅**
-**METRICS: Yes (₹12.2L Cr, 640% surge) ✅**
+The skeptics are terrified. Chip factories cost billions. Take ten years to build. Need expertise India doesn't have. What if we spend all this money and the technology changes? What if we can't compete with Taiwan and Korea? If this fails, that's twelve billion dollars wasted.
 
-=== YOUR TASK ===
+But here's what nobody's talking about. This isn't really about chips. It's about Trump-proofing. America is weaponizing chip access against China. India sees that weapon. Knows it could be next. Building domestic chip capacity isn't just economics—it's national security insurance. The real bet isn't on chips. It's on protecting against a world where technology is power and supply chains are weapons.
 
-Generate the JSON output with:
-1. A CRISP 120-130 word audio_script (single flowing text, no section breaks)
-2. Proper youtube_metadata with title, description, hashtags, hook, thumbnail_prompt
-3. Cinematic visual_prompts for each segment
+So the question is: defensive investment or desperate gamble? Comment below."
 
-**REMEMBER: Quality over quantity. Every word must earn its place.**
+[Word count: 247 words = ~2 minutes]
+
+Now write the actual script for {keyword}. Use ONLY the research data provided. Make it clear, concrete, and compelling.
 
 Return ONLY valid JSON within markdown code block.
 """

@@ -1078,150 +1078,143 @@ def render_excel_export_section(supabase, analysis_date):
 
 
 def create_canva_excel(google_data, twitter_data, analysis_date):
-    """Create Excel file formatted for Canva import and save to D:\THE FEEDROOM\Daily Summary"""
+    """
+    Create Excel with 2 sheets:
+    Sheet 1: Top 5 Google Trends
+    Sheet 2: Top 5 Twitter Trends
+    """
     try:
         import openpyxl
-        from openpyxl.styles import Font, Alignment, PatternFill
+        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
         import os
         
         # Create workbook
         wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "India Trends"
+        wb.remove(wb.active)  # Remove default sheet
         
-        # Helper function to format volume
-        def format_volume(vol):
-            if vol >= 1_000_000:
-                return f"{vol/1_000_000:.1f}M"
-            elif vol >= 1000:
-                return f"{vol/1000:.0f}K"
-            else:
-                return str(vol)
+        # === SHEET 1: GOOGLE TRENDS ===
+        ws_google = wb.create_sheet("Google Search Trends")
         
-        # Helper function to get sentiment emoji
-        def get_sentiment_emoji(sentiment_str):
-            sentiment_lower = str(sentiment_str).lower()
-            emoji_map = {
-                'excited': '🔥',
-                'celebrating': '🎉',
-                'curious': '🤔',
-                'concerned': '😟',
-                'controversial': '⚡',
-                'positive': '📈',
-                'negative': '📉',
-                'neutral': '😐'
-            }
-            return emoji_map.get(sentiment_lower, '📊')
-        
-        # ROW 1: Header Row
-        headers = ['Section', 'Column Name', 'Content Example']
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=header)
-            cell.font = Font(bold=True, size=12)
-            cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+        # Header row
+        google_headers = ['Keyword', 'Metric', 'Context', 'Why Trending', 'Sentiment']
+        for col, header in enumerate(google_headers, 1):
+            cell = ws_google.cell(row=1, column=col, value=header)
             cell.font = Font(bold=True, size=12, color="FFFFFF")
-            cell.alignment = Alignment(horizontal='center')
+            cell.fill = PatternFill(start_color="4285F4", end_color="4285F4", fill_type="solid")
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = Border(
+                bottom=Side(style='thick', color='000000')
+            )
         
-        # ROW 2: Slide 1 - Cover with Date
-        row = 2
-        ws.cell(row=row, column=1, value="Slide 1: Cover")
-        ws.cell(row=row, column=2, value="Date")
-        ws.cell(row=row, column=3, value=pd.to_datetime(analysis_date).strftime('%b %d, %Y'))
-        
-        # ROW 3: Slide 2 Header - Google Trends
-        row = 3
-        ws.cell(row=row, column=1, value="Slide 2: Google")
-        cell = ws.cell(row=row, column=1)
-        cell.font = Font(bold=True, size=11)
-        cell.fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
-        
-        # Google Trends Data (5 trends x 5 fields = 25 rows)
-        row = 4
-        for idx, trend in enumerate(google_data[:5], 1):
+        # Google data rows
+        for idx, trend in enumerate(google_data[:5], start=2):
             # Keyword
-            ws.cell(row=row, column=2, value=f"G{idx}_KW")
-            ws.cell(row=row, column=3, value=trend.get('keyword', 'N/A'))
-            row += 1
+            ws_google.cell(row=idx, column=1, value=trend.get('keyword', 'N/A'))
             
-            # Volume
-            ws.cell(row=row, column=2, value=f"G{idx}_Vol")
-            volume = format_volume(trend.get('search_volume', 0))
-            ws.cell(row=row, column=3, value=f"{volume} Searches")
-            row += 1
+            # Metric (formatted volume)
+            volume = trend.get('search_volume', 0)
+            if volume >= 1_000_000:
+                metric = f"{volume/1_000_000:.1f}M searches"
+            elif volume >= 1000:
+                metric = f"{volume/1000:.0f}K searches"
+            else:
+                metric = f"{volume} searches"
+            ws_google.cell(row=idx, column=2, value=metric)
             
             # Context
-            ws.cell(row=row, column=2, value=f"G{idx}_Context")
-            context = trend.get('context', 'N/A')[:100]
-            ws.cell(row=row, column=3, value=context)
-            row += 1
+            context = trend.get('context', 'N/A')
+            ws_google.cell(row=idx, column=3, value=context)
             
             # Why Trending
-            ws.cell(row=row, column=2, value=f"G{idx}_Why")
-            why = trend.get('why_trending', 'N/A')[:100]
-            ws.cell(row=row, column=3, value=why)
-            row += 1
+            why = trend.get('why_trending', 'N/A')
+            ws_google.cell(row=idx, column=4, value=why)
             
             # Sentiment
-            ws.cell(row=row, column=2, value=f"G{idx}_Sent")
             sentiment = trend.get('public_sentiment', 'curious')
-            emoji = get_sentiment_emoji(sentiment)
-            ws.cell(row=row, column=3, value=emoji)
-            row += 1
+            ws_google.cell(row=idx, column=5, value=sentiment.title())
+            
+            # Alternate row colors
+            if idx % 2 == 0:
+                fill = PatternFill(start_color="F3F4F6", end_color="F3F4F6", fill_type="solid")
+                for col in range(1, 6):
+                    ws_google.cell(row=idx, column=col).fill = fill
         
-        # Add spacing row
-        row += 1
+        # Column widths for Google sheet
+        ws_google.column_dimensions['A'].width = 30
+        ws_google.column_dimensions['B'].width = 18
+        ws_google.column_dimensions['C'].width = 50
+        ws_google.column_dimensions['D'].width = 50
+        ws_google.column_dimensions['E'].width = 15
         
-        # Twitter Trends Header
-        ws.cell(row=row, column=1, value="Slide 3: Twitter")
-        cell = ws.cell(row=row, column=1)
-        cell.font = Font(bold=True, size=11)
-        cell.fill = PatternFill(start_color="1DA1F2", end_color="1DA1F2", fill_type="solid")
-        row += 1
+        # Wrap text for Context and Why columns
+        for row in range(2, len(google_data[:5]) + 2):
+            ws_google.cell(row=row, column=3).alignment = Alignment(wrap_text=True, vertical='top')
+            ws_google.cell(row=row, column=4).alignment = Alignment(wrap_text=True, vertical='top')
         
-        # Twitter Trends Data
-        for idx, trend in enumerate(twitter_data[:5], 1):
-            # Hashtag/Keyword
-            ws.cell(row=row, column=2, value=f"T{idx}_HT")
+        # === SHEET 2: TWITTER TRENDS ===
+        ws_twitter = wb.create_sheet("Twitter Trends")
+        
+        # Header row
+        twitter_headers = ['Hashtag', 'Mentions', 'Context', 'Why Trending', 'Sentiment']
+        for col, header in enumerate(twitter_headers, 1):
+            cell = ws_twitter.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True, size=12, color="FFFFFF")
+            cell.fill = PatternFill(start_color="1DA1F2", end_color="1DA1F2", fill_type="solid")
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = Border(
+                bottom=Side(style='thick', color='000000')
+            )
+        
+        # Twitter data rows
+        for idx, trend in enumerate(twitter_data[:5], start=2):
+            # Hashtag (ensure it starts with #)
             keyword = trend.get('keyword', 'N/A')
             if not keyword.startswith('#') and keyword != 'N/A':
                 keyword = f"#{keyword}"
-            ws.cell(row=row, column=3, value=keyword)
-            row += 1
+            ws_twitter.cell(row=idx, column=1, value=keyword)
             
-            # Mentions
-            ws.cell(row=row, column=2, value=f"T{idx}_Men")
-            mentions = format_volume(trend.get('mention_volume', 0))
-            ws.cell(row=row, column=3, value=f"{mentions} Mentions")
-            row += 1
+            # Mentions (formatted volume)
+            mentions = trend.get('mention_volume', 0)
+            if mentions >= 1_000_000:
+                mention_str = f"{mentions/1_000_000:.1f}M mentions"
+            elif mentions >= 1000:
+                mention_str = f"{mentions/1000:.0f}K mentions"
+            else:
+                mention_str = f"{mentions} mentions"
+            ws_twitter.cell(row=idx, column=2, value=mention_str)
             
             # Context
-            ws.cell(row=row, column=2, value=f"T{idx}_Context")
-            context = trend.get('context', 'N/A')[:100]
-            ws.cell(row=row, column=3, value=context)
-            row += 1
+            context = trend.get('context', 'N/A')
+            ws_twitter.cell(row=idx, column=3, value=context)
             
             # Why Trending
-            ws.cell(row=row, column=2, value=f"T{idx}_Why")
-            why = trend.get('why_trending', 'N/A')[:100]
-            ws.cell(row=row, column=3, value=why)
-            row += 1
+            why = trend.get('why_trending', 'N/A')
+            ws_twitter.cell(row=idx, column=4, value=why)
             
             # Sentiment
-            ws.cell(row=row, column=2, value=f"T{idx}_Sent")
-            sentiment = trend.get('sentiment', 'curious')
-            emoji = get_sentiment_emoji(sentiment)
-            ws.cell(row=row, column=3, value=emoji)
-            row += 1
+            sentiment = trend.get('primary_sentiment') or trend.get('sentiment', 'curious')
+            ws_twitter.cell(row=idx, column=5, value=sentiment.title())
+            
+            # Alternate row colors
+            if idx % 2 == 0:
+                fill = PatternFill(start_color="E8F4FD", end_color="E8F4FD", fill_type="solid")
+                for col in range(1, 6):
+                    ws_twitter.cell(row=idx, column=col).fill = fill
         
-        # Auto-adjust column widths
-        ws.column_dimensions['A'].width = 20
-        ws.column_dimensions['B'].width = 15
-        ws.column_dimensions['C'].width = 60
+        # Column widths for Twitter sheet
+        ws_twitter.column_dimensions['A'].width = 30
+        ws_twitter.column_dimensions['B'].width = 18
+        ws_twitter.column_dimensions['C'].width = 50
+        ws_twitter.column_dimensions['D'].width = 50
+        ws_twitter.column_dimensions['E'].width = 15
         
-        # Save to D:\THE FEEDROOM\Daily Summary
+        # Wrap text for Context and Why columns
+        for row in range(2, len(twitter_data[:5]) + 2):
+            ws_twitter.cell(row=row, column=3).alignment = Alignment(wrap_text=True, vertical='top')
+            ws_twitter.cell(row=row, column=4).alignment = Alignment(wrap_text=True, vertical='top')
+        
+        # Save to output directory
         output_dir = r"D:\THE FEEDROOM\Daily Summary"
-        
-        # Create directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
         
         output_path = os.path.join(output_dir, f"India_Trends_{analysis_date}.xlsx")
@@ -1232,8 +1225,7 @@ def create_canva_excel(google_data, twitter_data, analysis_date):
     except Exception as e:
         st.error(f"Excel creation error: {str(e)}")
         return None
-
-
+    
 def render_raw_data_tables_india(google_data, twitter_data):
     """Display raw data tables for India only with cleaned columns"""
     st.markdown("### 📋 Raw Data Tables")

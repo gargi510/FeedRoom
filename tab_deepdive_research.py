@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import date
 from prompts import get_deepdive_research_prompt, get_deepdive_script_prompt
 from utils import parse_json_input
+import os
 
 
 def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
@@ -15,17 +16,13 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
     st.header("🔬 Deep Dive Research")
     st.caption("**The FeedRoom Strategic Clash Analysis**")
     
-    if 'google_data' not in st.session_state or 'twitter_data' not in st.session_state:
-        st.info("📥 Collect data first")
-        return
-    
     if st.session_state.get('deepdive_finetune_mode', False):
         render_deepdive_finetuner()
         return
     
     st.divider()
     
-    render_keyword_selector_dropdown()
+    render_keyword_selector_dropdown(supabase)
     
     if 'deepdive_keyword' not in st.session_state:
         return
@@ -52,21 +49,49 @@ def render_deepdive_research_tab(gemini_pro, gemini_flash, supabase):
         render_phase2_script_and_save(gemini_pro, gemini_flash, supabase)
 
 
-def render_keyword_selector_dropdown():
-    """Dropdown selector: Region → Platform → Keyword"""
+def render_keyword_selector_dropdown(supabase):
+    """Dropdown selector: Date → Region → Platform → Keyword"""
     st.markdown("### 🎯 Select Keyword for Deep Dive")
     
-    google_df = pd.DataFrame(st.session_state.get('google_data', []))
-    twitter_df = pd.DataFrame(st.session_state.get('twitter_data', []))
+    col_date1, col_date2 = st.columns([3, 1])
     
-    google_df['platform'] = 'Google Trends'
-    twitter_df['platform'] = 'Twitter/X'
+    with col_date1:
+        selected_date = st.date_input(
+            "📅 Select Data Date:",
+            value=date.today(),
+            max_value=date.today(),
+            key='deepdive_data_date',
+            help="Choose which day's trending data to analyze"
+        )
+    
+    with col_date2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            st.rerun()
+    
+    google_data = fetch_google_trends_for_date(supabase, selected_date.isoformat())
+    twitter_data = fetch_twitter_trends_for_date(supabase, selected_date.isoformat())
+    
+    if not google_data and not twitter_data:
+        st.warning(f"⚠️ No data found for {selected_date.isoformat()}")
+        st.info("💡 Try selecting a different date or collect data first in the Data Collection tab")
+        return
+    
+    google_df = pd.DataFrame(google_data) if google_data else pd.DataFrame()
+    twitter_df = pd.DataFrame(twitter_data) if twitter_data else pd.DataFrame()
+    
+    if len(google_df) > 0:
+        google_df['platform'] = 'Google Trends'
+    if len(twitter_df) > 0:
+        twitter_df['platform'] = 'Twitter/X'
     
     combined_df = pd.concat([google_df, twitter_df], ignore_index=True)
     
     if len(combined_df) == 0:
         st.warning("No data available")
         return
+    
+    st.divider()
     
     col1, col2, col3 = st.columns(3)
     
@@ -119,6 +144,7 @@ def render_keyword_selector_dropdown():
             <h3 style="margin:0;">🎯 {selected_keyword}</h3></div>""",
             unsafe_allow_html=True
         )
+        st.markdown(f"**📅 Date:** {selected_date.isoformat()}")
         st.markdown(f"**🌍 Region:** {selected_region}")
         st.markdown(f"**📱 Platform:** {selected_platform}")
         st.markdown(f"**📂 Category:** {keyword_row.get('category', 'N/A')}")
@@ -149,10 +175,55 @@ def render_keyword_selector_dropdown():
             'why_trending': keyword_row.get('why_trending', ''),
             'volume': volume,
             'velocity': keyword_row.get('velocity', 'steady'),
-            'sentiment': keyword_row.get('public_sentiment', keyword_row.get('primary_sentiment', 'curious'))
+            'sentiment': keyword_row.get('public_sentiment', keyword_row.get('primary_sentiment', 'curious')),
+            'data_date': selected_date.isoformat()
         }
         st.session_state['deepdive_phase'] = 1
         st.rerun()
+
+
+def fetch_google_trends_for_date(supabase, date_str):
+    """Fetch Google trends for specific date from session state or database"""
+    if 'google_data' in st.session_state:
+        google_df = pd.DataFrame(st.session_state['google_data'])
+        if 'collection_date' in google_df.columns:
+            filtered = google_df[google_df['collection_date'] == date_str]
+            if len(filtered) > 0:
+                return filtered.to_dict('records')
+    
+    if supabase:
+        try:
+            result = supabase.table('google_trends')\
+                .select('*')\
+                .eq('collection_date', date_str)\
+                .execute()
+            return result.data if result.data else []
+        except:
+            pass
+    
+    return []
+
+
+def fetch_twitter_trends_for_date(supabase, date_str):
+    """Fetch Twitter trends for specific date from session state or database"""
+    if 'twitter_data' in st.session_state:
+        twitter_df = pd.DataFrame(st.session_state['twitter_data'])
+        if 'collection_date' in twitter_df.columns:
+            filtered = twitter_df[twitter_df['collection_date'] == date_str]
+            if len(filtered) > 0:
+                return filtered.to_dict('records')
+    
+    if supabase:
+        try:
+            result = supabase.table('twitter_trends')\
+                .select('*')\
+                .eq('collection_date', date_str)\
+                .execute()
+            return result.data if result.data else []
+        except:
+            pass
+    
+    return []
 
 
 def render_phase1_research(gemini_pro, gemini_flash):
@@ -419,7 +490,6 @@ def display_script_editor(supabase):
         wc = len(edited.split())
         duration = wc / 150
         
-        # Deep dive can be any length - just show info, no validation
         st.markdown(
             f"""<div style="background:#10b981; padding:10px; border-radius:8px; 
             color:white; text-align:center; margin-top:10px;">
